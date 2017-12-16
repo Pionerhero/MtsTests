@@ -1,9 +1,5 @@
 ﻿using OpenQA.Selenium;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics.Contracts;
 using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Firefox;
@@ -90,10 +86,8 @@ namespace DnsTests
         {
             Actions actions = new Actions(_webDriver);
             actions.MoveToElement(webelement).Click();
-
             var action = actions.Build();
             action.Perform();
-
         }
 
         public static void scrollDown()
@@ -104,6 +98,14 @@ namespace DnsTests
         public static void scrollUp()
         {
             ExecuteJavaScript("window.scrollBy(0,-document.body.clientHeight)", "");
+        }
+
+        public static void WaitReadyStateAndAJAX()
+        {
+            Contract.Assume(WebDriver != null);
+            var ready = WebExtensions.WaitUntil(() => (bool)ExecuteJavaScript("return document.readyState == 'complete'"))
+                && WebExtensions.WaitUntil(() => (bool)ExecuteJavaScript("return (typeof($) === 'undefined') ? true : !$.active;"));
+            Contract.Assert(ready);
         }
 
         public static object ExecuteJavaScript(string javaScript, params object[] args)

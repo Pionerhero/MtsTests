@@ -1,66 +1,71 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
-using System.Linq;
-using OpenQA.Selenium.Interactions;
-using System.Threading;
+using DnsTests.Pages;
 
 namespace DnsTests
 {
     [TestClass]
     public class InversionListTests
     {
+        /// <summary>
+        /// Categories data for tests
+        /// </summary>
+        //public Dictionary<int, string> menuCatalogTextCategories = new Dictionary<int, string>
+        //{
+        //    {0, "Ноутбуки и планшеты" },
+        //    {1, "Компьютеры и периферия" },
+        //    {2, "Комплектующие для ПК" },
+        //    {3, "Смартфоны и смарт-часы" },
+        //    {4, "Телевизоры и медиа" },
+        //    {5, "Игры и приставки" },
+        //    {6, "Аудиотехника" },
+        //    {7, "Фото-видеоаппаратура" },
+        //    {8, "Офисная техника и мебель" },
+        //    {9, "Сетевое оборудование" },
+        //    {10," Автотовары" },
+        //    {11, "Крупная бытовая техника" },
+        //    {12, "Товары для кухни" },
+        //    {13, "Красота и здоровье" },
+        //    {14, "Товары для дома" },
+        //    {15, "Инструменты" },
+        //    {16, "Услуги" },
+        //    {17, "Собери свой компьютер" },
+        //    {18, "Акции" },
+        //    {19, "Уцененные товары" }
+        //};
+
         IWebDriver CurrentBrowser;
-        string Url;
 
         [TestInitialize]
         public void TestInit()
         {
             Browser.StartWebDriver();
             CurrentBrowser = Browser.WebDriver;
-            Url = "http://www.dns-shop.ru";
         }
 
         [TestMethod]
         public void InversionListLaptopTest()
         {
-            CurrentBrowser.Navigate().GoToUrl(Url);
+            #region TestData
+            string lowerPriceProductModel1 = "";
+            string lowerPriceProductModel2 = "";
+            #endregion
 
-            Thread.Sleep(5000);
-            var cityBtn = CurrentBrowser.FindElement(By.CssSelector(".btn.btn-additional"));
-            Browser.scrollToElementAndClick(cityBtn);
+            DnsIndexPage dnsIndexPage = new DnsIndexPage();
+            dnsIndexPage.GoToPage();
+            dnsIndexPage.ConfirmDefaultCity();
+            var assortimentPage = dnsIndexPage.ChooseCategory("Ноутбуки и планшеты", "Ноутбуки"); //("Ноутбуки и планшеты", "Ноутбуки", "Нетбуки")
+            assortimentPage.Sort(StandardAssortimentPage.OrderMode.Ascending);
 
-            Thread.Sleep(700);
-            var lapAndTabs = CurrentBrowser.FindElement(By.CssSelector("#menu-catalog > li:nth-child(1) > a"));
-            new Actions(CurrentBrowser).MoveToElement(lapAndTabs).Perform();
+            lowerPriceProductModel1 = GetModelFromItemText(assortimentPage.GetItemText(1));
 
-            Thread.Sleep(700);
-            var lap = CurrentBrowser.FindElement(By.CssSelector("#menu-catalog > li:nth-child(1) > div > ul > li:nth-child(1) > div > a"));
-            Browser.scrollToElementAndClick(lap);
+            assortimentPage.Sort(StandardAssortimentPage.OrderMode.Descending);
+            assortimentPage.GoToLastPage();
 
-            AssertEquals();
-        }
+            lowerPriceProductModel2 = GetModelFromItemText(assortimentPage.GetLastItemText());
 
-        [TestMethod]
-        public void InversionListSmartphonesTest()
-        {
-            CurrentBrowser.Navigate().GoToUrl(Url);
-
-            Thread.Sleep(5000);
-            var cityBtn = CurrentBrowser.FindElement(By.CssSelector(".btn.btn-additional"));
-            Browser.scrollToElementAndClick(cityBtn);
-
-            Thread.Sleep(1000);
-            var phonesAndWatches = CurrentBrowser.FindElement(By.CssSelector("#menu-catalog > li:nth-child(4) > a"));
-            new Actions(CurrentBrowser).MoveToElement(phonesAndWatches).Perform();
-            
-
-            Thread.Sleep(1000);
-            var phones = CurrentBrowser.FindElement(By.CssSelector("#menu-catalog > li:nth-child(4) > div > ul > li:nth-child(1) > div > a"));
-            Browser.scrollToElementAndClick(phones);
-
-
-            AssertEquals();
+            Assert.AreEqual(lowerPriceProductModel1, lowerPriceProductModel2);
         }
 
         [TestCleanup]
@@ -69,44 +74,9 @@ namespace DnsTests
             Browser.Quit();
         }
 
-        private void AssertEquals()
+        private static string GetModelFromItemText(string itemText)
         {
-            Thread.Sleep(5000);
-            string priseOrderSelector = @"#sort-filter > div:nth-child(1) > div > button > span.title";
-            string lowerPriceSelector = @"#sort-filter > div:nth-child(1) > div > ul > li:nth-child(2) > a"; //<
-            string higherPriceSelector = @"#sort-filter > div:nth-child(1) > div > ul > li.disabled > a";//>
-
-            var priseOrder = CurrentBrowser.FindElement(By.CssSelector(priseOrderSelector));
-            var higherPrice = CurrentBrowser.FindElement(By.CssSelector(higherPriceSelector));
-            var lowerPrice = CurrentBrowser.FindElement(By.CssSelector(lowerPriceSelector));
-            Browser.scrollToElementAndClick(priseOrder);
-            Browser.scrollToElementAndClick(higherPrice);
-
-            Thread.Sleep(5000);
-            string firstIndexSelector = @"//div[@data-position-index='1']";
-            var firstItem = CurrentBrowser.FindElement(By.XPath(firstIndexSelector));
-
-            string productName1 = firstItem.Text.Substring(0, firstItem.Text.IndexOf(Environment.NewLine));
-
-            Browser.scrollToElementAndClick(priseOrder);
-            Browser.scrollToElementAndClick(lowerPrice);
-
-            Thread.Sleep(5000);
-            string inEndSelector = @"#catalog-items-page > div.page-content-container > div.catalog-category-wrapper > div.catalog-items > div.pagination-container > div > span:nth-child(10)";
-            var inEnd = CurrentBrowser.FindElement(By.CssSelector(inEndSelector));
-            Browser.scrollDown();
-            Browser.scrollToElementAndClick(inEnd);
-
-            Thread.Sleep(5000);
-            Browser.scrollDown();
-
-            Thread.Sleep(500);
-            string itemListSelector = @"#catalog-items-page > div.page-content-container > div.catalog-category-wrapper > div.catalog-items > div.catalog-items-list.view-list";
-            var itemList = CurrentBrowser.FindElement(By.CssSelector(itemListSelector));
-            var lastItem = itemList.FindElement(By.XPath("./div[last()]"));
-
-            string productName2 = lastItem.Text.Substring(0, lastItem.Text.IndexOf(Environment.NewLine));
-            Assert.AreEqual(productName1, productName2);
+            return itemText.Substring(0, itemText.IndexOf(Environment.NewLine));
         }
     }
 }
